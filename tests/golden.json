@@ -1,0 +1,288 @@
+{
+  "parseIds": [
+    {
+      "input": "GZP_B1234",
+      "expected": [
+        {
+          "reg": "GZP",
+          "typ": "B",
+          "num": "1234"
+        }
+      ]
+    },
+    {
+      "input": "site GZP1234 and B5678",
+      "expected": [
+        {
+          "reg": "GZP",
+          "num": "1234",
+          "typ": ""
+        },
+        {
+          "reg": "",
+          "num": "5678",
+          "typ": "B"
+        }
+      ]
+    },
+    {
+      "input": "ABCD-123",
+      "expected": []
+    },
+    {
+      "input": "GZP_B12345 GZP_C1234",
+      "expected": [
+        {
+          "reg": "GZP",
+          "typ": "B",
+          "num": "12345"
+        },
+        {
+          "reg": "GZP",
+          "typ": "C",
+          "num": "1234"
+        }
+      ]
+    }
+  ],
+  "safeKey": [
+    {
+      "input": "  gzP.# /site  ",
+      "expected": "GZP__ _SITE"
+    },
+    {
+      "input": null,
+      "expected": ""
+    },
+    {
+      "input": "x",
+      "expected": "X"
+    }
+  ],
+  "lookupKeys": [
+    {
+      "site": "GZP_B1234",
+      "keys": {
+        "GZP_B1234": "Primary",
+        "GZP1234": "Regional",
+        "B1234": "Bare"
+      },
+      "expected": "Primary\n— — —\nBare\n— — —\nRegional"
+    },
+    {
+      "site": "B1234",
+      "keys": {
+        "OTHER1234": "Weak match"
+      },
+      "expected": "(≈ OTHER1234) Weak match"
+    },
+    {
+      "site": "NO_MATCH",
+      "keys": {
+        "GZP_B1234": "Primary"
+      },
+      "expected": null
+    }
+  ],
+  "searchRows": [
+    {
+      "query": "GZP_B1234",
+      "master": [
+        [
+          "Site",
+          "IP",
+          "Sub-Center",
+          "Node",
+          "Model",
+          "Lat",
+          "Long",
+          "Client"
+        ],
+        [
+          "GZP_B1234",
+          "10.0.0.1",
+          "Dhaka",
+          "N1",
+          "M1",
+          "23",
+          "90",
+          "Client A"
+        ],
+        [
+          "OTHER_C5678",
+          "10.0.0.2",
+          "Chattogram",
+          "N2",
+          "M2",
+          "22",
+          "91",
+          "Client B"
+        ]
+      ],
+      "expected": [
+        "GZP_B1234"
+      ]
+    },
+    {
+      "query": "CLIENT B",
+      "master": [
+        [
+          "Site",
+          "IP",
+          "Sub-Center",
+          "Node",
+          "Model",
+          "Lat",
+          "Long",
+          "Client"
+        ],
+        [
+          "GZP_B1234",
+          "10.0.0.1",
+          "Dhaka",
+          "N1",
+          "M1",
+          "23",
+          "90",
+          "Client A"
+        ],
+        [
+          "OTHER_C5678",
+          "10.0.0.2",
+          "Chattogram",
+          "N2",
+          "M2",
+          "22",
+          "91",
+          "Client B"
+        ]
+      ],
+      "expected": [
+        "GZP_B1234",
+        "OTHER_C5678"
+      ]
+    },
+    {
+      "query": "GZP",
+      "master": [
+        [
+          "Site",
+          "IP",
+          "Sub-Center",
+          "Node",
+          "Model",
+          "Lat",
+          "Long",
+          "Client"
+        ],
+        [
+          "GZP_B1234",
+          "10.0.0.1",
+          "Dhaka",
+          "N1",
+          "M1",
+          "23",
+          "90",
+          "Client A"
+        ],
+        [
+          "OTHER_C5678",
+          "10.0.0.2",
+          "Chattogram",
+          "N2",
+          "M2",
+          "22",
+          "91",
+          "Client B"
+        ]
+      ],
+      "expected": [
+        "GZP_B1234"
+      ]
+    },
+    {
+      "query": "   ",
+      "master": [
+        [
+          "Site"
+        ],
+        [
+          "GZP_B1234"
+        ]
+      ],
+      "expected": []
+    }
+  ],
+  "keyOnly": [
+    {
+      "label": "linked exact key is excluded, unmatched key remains",
+      "masterNames": [
+        "GZP_B1234"
+      ],
+      "keys": {
+        "GZP_B1234": "Existing site key",
+        "XYZ_C9999": "Orphan key"
+      },
+      "expected": [
+        {
+          "name": "XYZ_C9999",
+          "v": "Orphan key",
+          "aliases": [
+            "9999",
+            "XYZ9999",
+            "XYZ_C9999"
+          ]
+        }
+      ]
+    },
+    {
+      "label": "matching region and number with incompatible type remains",
+      "masterNames": [
+        "GZP_B1234"
+      ],
+      "keys": {
+        "GZP_C1234": "Same site by region and number",
+        "ABCD_B1234": "Unmatched key"
+      },
+      "expected": [
+        {
+          "name": "ABCD_B1234",
+          "v": "Unmatched key",
+          "aliases": [
+            "1234",
+            "ABCD1234",
+            "ABCD_B1234"
+          ]
+        },
+        {
+          "name": "GZP_C1234",
+          "v": "Same site by region and number",
+          "aliases": [
+            "1234",
+            "GZP1234",
+            "GZP_C1234"
+          ]
+        }
+      ]
+    },
+    {
+      "label": "empty key values are ignored",
+      "masterNames": [],
+      "keys": {
+        "EMPTY": "  ",
+        "SITE_B4321": "Valid orphan"
+      },
+      "expected": [
+        {
+          "name": "SITE_B4321",
+          "v": "Valid orphan",
+          "aliases": [
+            "4321",
+            "SITE4321",
+            "SITE_B4321"
+          ]
+        }
+      ]
+    }
+  ]
+}
